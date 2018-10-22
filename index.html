@@ -1,0 +1,83 @@
+<html>
+<head>
+    <meta charset="utf8"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>Luna</title>
+</head>
+<body>
+<form>
+    <input type="text" id="pan">
+    <input type="button" id="actionBtn" value="Do!"/>
+</form>
+<div>Результат проверки по алгоритму Луна: <span id="result"></span></div>
+<script>
+    $btn = $('#actionBtn');
+    $pan = $('#pan');
+    $result = $('#result');
+
+    $btn.click(function ($e) {
+        function isNumeric(n) {
+            //Преобразуем в float, при этом отсеятся значения "false", "true", "null", для которых isFinite возвращает true
+            return !isNaN(parseFloat(n)) &&
+                //Проверим, что это число
+                isFinite(n);
+        }
+
+        function checkIfPanNumeric(panArray) {
+            //array.filter проходит по каждому значению массива и возвращает массив со значениями, для которых callback-функция не вернула false
+            var filteredNumberPan = panArray.filter(function (symbol) {
+                //Специальная функция, которая проверяет, число ли это
+                return isNumeric(symbol);
+            });
+
+            //сравниваем длину отфильтрованного массива с длиной начального - если они равны, то значит весь pan состоит из чисел
+            return filteredNumberPan.length === panArray.length;
+        }
+
+        function checkPanByLuhn(panArray) {
+            var controlSum = 0;
+            //Пройдем по массиву и вычислим контрольную сумму по алгоритму Луна
+            panArray.forEach(function (symbol, index) {
+                //преобразуем в число
+                var preparedSymbol = parseInt(symbol);
+                //умножим нужные позиции на 2 и сложим числа (то же самое, что вычесть 9, например, для 18: 1 + 8 = 9 и 18 - 9 = 9)
+                if ((index + panArray.length) % 2 === 0) {
+                    preparedSymbol *= 2;
+
+                    if (preparedSymbol > 9) {
+                        preparedSymbol -= 9;
+                    }
+                }
+                //через замыкание суммируем текущее значение переменной controlSum с вычисленным числом preparedSymbol
+                controlSum += preparedSymbol;
+            });
+
+            //проверяем, что сумма кратна 10
+            return controlSum % 10 === 0;
+        }
+
+        function cardIsValid(pan) {
+            //Проверим, что pan-код вообще задан
+            if (!pan) {
+                return false;
+            }
+
+            //Разделим строку pan на массив из чисел
+            var panArray = pan.split('');
+
+            //Проверим, что pan состоит из чисел
+            if (!checkIfPanNumeric(panArray)) {
+                return false;
+            }
+
+            //Проверим pan по алгоритму Луна
+            return checkPanByLuhn(panArray);
+        }
+
+        $result.html(
+            cardIsValid($pan.val()) ? 'Карта валидна' : 'Карта невалидна'
+        );
+    });
+</script>
+</body>
+</html>
